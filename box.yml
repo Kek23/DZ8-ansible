@@ -1,2 +1,65 @@
 ---
-- name: 
+- name: build war
+  hots: build
+  become: yes
+
+  tasks:
+  - name: Ensure git packages is present
+    apt:
+     name: git
+     state: present
+
+  - name: Ensure default-jdk package is present
+    apt:
+     name: default-jdk
+     state: present
+
+  - name: Ensure maven packages is present
+    apt:
+     name: maven
+     state: present
+  
+  - name: Clone git repository boxfuse
+    git:
+     repo: https://github.com/boxfuse/boxfuse-sample-java-war-hello.git
+     dest: /user/boxfuse
+     version: master
+     clone: yes
+     update: yes
+     
+  - name: Maven clean package
+    command: mvn -f /user/boxfuse/boxfuse-sample-java-war-hello  clean package
+
+  - name: Check the artifact
+    state:
+      path:  /user/boxfuse/target/hello-1.0.war
+    register: stat_result
+  - name: Create the file if it doent exit alredy
+    file:
+      path: /user/boxfuse/target/hello-1.0.war
+      state: touch
+    when: not stat_result.stat.exists
+  
+  - name: Copy file to the local machine
+    copy:
+      src: /user/boxfuse/target/hello-1.0.war
+      dest: /user/hello-1.0.war
+      remote_src: no
+
+- name: deploy an artifact
+  hosts: web
+  become: true
+
+  tasks:
+    - name: Ensure tomcat package is present
+      apt:
+       name: tomcat8
+       state: present
+     
+    - name: Ensure tomcat is started
+      service:
+        name: tomcat8
+        state: started
+
+
+    
