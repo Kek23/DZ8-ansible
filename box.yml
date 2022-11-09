@@ -1,6 +1,6 @@
 ---
-- name: build war
-  hots: build
+- name: build artifact
+  hosts: build
   become: yes
 
   tasks:
@@ -31,7 +31,7 @@
     command: mvn -f /user/boxfuse/boxfuse-sample-java-war-hello  clean package
 
   - name: Check the artifact
-    state:
+    stat:
       path:  /user/boxfuse/target/hello-1.0.war
     register: stat_result
   - name: Create the file if it doent exit alredy
